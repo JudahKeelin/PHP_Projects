@@ -1,6 +1,24 @@
 <?php
-session_start();
 
+// Include your database connection file here
+require_once('Handlers/dbh.inc.php');
+
+// Check if a user is logged in
+if (!isset($_COOKIE['userId'])) {
+    // Redirect to login page or handle authentication
+    header("Location: login.php");
+    exit();
+}
+
+// Fetch cart items from the database
+//$userId = $_SESSION['userId'];
+$cartItemsQuery = "SELECT c.*, p.name, p.price FROM Carts c
+                   JOIN Products p ON c.productId = p.id
+                   WHERE c.userId = :userId";
+$cartItemsStmt = $conn->prepare($cartItemsQuery);
+$cartItemsStmt -> bindParam(':userId', $_COOKIE['userId']);
+$cartItemsStmt -> execute();
+$cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -9,9 +27,9 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hardware Store - Cart</title>
-    
+    <!-- You can include CSS stylesheets here if needed -->
     <style>
-        
+        /* Add your CSS styles here */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -28,7 +46,7 @@ session_start();
             margin: 20px auto;
             padding: 0 20px;
         }
-        
+        /* Add more styles as needed */
     </style>
 </head>
 <body>
@@ -38,7 +56,7 @@ session_start();
     <div class="container">
         <h2>Cart</h2>
         <div class="cart">
-            <?php if (empty($_SESSION['cart'])): ?>
+            <?php if (empty($cartItems)): ?>
                 <p>Your cart is empty.</p>
                 <a href="shop.php" class="button">Back to Shop</a>
             <?php else: ?>
@@ -52,29 +70,14 @@ session_start();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                        // Fetch details for each product in the cart
-                        foreach ($_SESSION['cart'] as $item) {
-                            $productId = $item['productId'];
-                            $quantity = $item['quantity'];
-                            
-                            // Query to fetch product details
-                            $sql = "SELECT p.id, p.name, p.price FROM Products p WHERE p.id = :productId";
-                            //$sql = SELECT * FROM Carts;
-                            $stmt = $conn->prepare($sql);
-                            $stmt->bindParam(':productId', $productId);
-                            $stmt->execute();
-                            $product = $stmt->fetch(PDO::FETCH_ASSOC);
-                            
-                            // Display product details
-                            echo "<tr>";
-                            echo "<td>" . $product['id'] . "</td>";
-                            echo "<td>" . $product['name'] . "</td>";
-                            echo "<td>$" . $product['price'] . "</td>";
-                            echo "<td>" . $quantity . "</td>";
-                            echo "</tr>";
-                        }
-                        ?>
+                        <?php foreach ($cartItems as $item): ?>
+                            <tr>
+                                <td><?php echo $item['productId']; ?></td>
+                                <td><?php echo $item['name']; ?></td>
+                                <td>$<?php echo $item['price']; ?></td>
+                                <td><?php echo $item['productCount']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
                 <a href="shop.php" class="button">Back to Shop</a>
