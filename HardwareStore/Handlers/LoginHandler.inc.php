@@ -20,13 +20,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($user != 1) {
             if (password_verify($password, $user['password'])) {
                 setcookie("userId", $user['id'], time() + 86400, "/");
+                setcookie("userLevel", $user['userLevel'], time() + 86400, "/");
             } else {
                 setcookie("userId", -1, time() + 86400, "/");
+                setcookie("userLevel", -1, time() + 86400, "/");
                 header("Location: ../Login.php");
                 die();
             }
         } else {
             setcookie("userId", -1, time() + 86400, "/");
+            setcookie("userLevel", -1, time() + 86400, "/");
             header("Location: ../Login.php");
             die();
         }
