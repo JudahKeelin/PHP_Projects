@@ -12,18 +12,15 @@ require_once('Handlers/dbh.inc.php');
 
 
 
-// Fetch products from the database
-$productsQuery = "SELECT iv.id,
-    storeId,
-    p.id AS productId,
-    productCount,
-    p.name,
-    CAST(p.price AS DECIMAL(10, 2)) AS price,
-    p.description,
-    p.picture
-FROM Inventory iv
-JOIN Products p ON iv.productId = p.id";
-$productsStmt = $conn->query($productsQuery);
+// Fetch inventory from the database
+$inventoryQuery = "SELECT i.id,
+                         i.storeId,
+                         i.name,
+                         i.availableQuantity,
+                         CAST(i.price AS DECIMAL(10, 2)) AS price,
+                         i.description
+                    FROM Inventory i";
+$inventoryStmt = $conn->query($inventoryQuery);
 ?>
 
 <!DOCTYPE html>
@@ -87,15 +84,15 @@ $productsStmt = $conn->query($productsQuery);
         <div class="products">
             <?php
             
-                while ($row = $productsStmt->fetch(PDO::FETCH_ASSOC)) {
+                while ($row = $inventoryStmt->fetch(PDO::FETCH_ASSOC)) {
                     echo "<div class='product'>
                             <h3>Product Name: " . $row['name'] . "</h3>
                             <p>Description: " . $row['description'] . "</p>
-                            <p>Available Quantity: " . $row['productCount'] . "</p>
+                            <p>Available Quantity: " . $row['availableQuantity'] . "</p>
                             <p>Price: $" . $row['price'] . "</p>
                             <form action='Handlers/ShopHandler.inc.php' method='post'>
                                 <label for='quantity'>Quantity:</label>
-                                <input type='number' id='quantity' name='quantity' min='1' max='" . $row['productCount'] . "' value='1'>
+                                <input type='number' id='quantity' name='quantity' min='1' max='" . $row['availableQuantity'] . "' value='1'>
                                 <input type='hidden' name='inventoryId' value='" . $row['id'] . "'>
                                 <button type='submit' name='submit'>Add to Cart</button>
                             </form>
@@ -109,7 +106,6 @@ $productsStmt = $conn->query($productsQuery);
     if (isset($_POST['logout'])) {
         // Remove the userId cookie
         setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
-        setcookie('userLevel', '', time() - 3600, '/'); // Expire the cookie
         // Redirect to the login page or any other desired page
         header("Location: login.php"); // Replace 'login.php' with your desired page
         exit(); // Terminate the script

@@ -8,10 +8,9 @@
             $defaultStatus = "Pending";
 
             // Get data for invoice
-            $getCartQuery = "SELECT c.id, c.userId, c.inventoryId, c.productCount, i.storeId, i.productCount AS inventoryCount, p.id AS productId, p.name, CAST(p.price AS DECIMAL(10, 2)) AS price
+            $getCartQuery = "SELECT c.id, c.userId, c.inventoryId, c.productCount, i.storeId, i.availableQuantity, i.name, CAST(i.price AS DECIMAL(10, 2)) AS price
                             FROM Carts c
                             JOIN Inventory i ON c.inventoryId = i.id
-                            JOIN Products p ON i.productId = p.id
                             WHERE c.userId = :userId";
             
             $getCartStmt = $conn->prepare($getCartQuery);
@@ -41,9 +40,9 @@
                 $invoiceStmt = null;
 
                 // Update inventory
-                $newInventoryCount = $cartItem['inventoryCount'] - $cartItem['productCount'];
+                $newInventoryCount = $cartItem['availableQuantity'] - $cartItem['productCount'];
 
-                $updateInventoryQuery = "UPDATE Inventory SET productCount = :newInventoryCount WHERE id = :inventoryId";
+                $updateInventoryQuery = "UPDATE Inventory SET availableQuantity = :newInventoryCount WHERE id = :inventoryId";
 
                 $updateInventoryStmt = $conn->prepare($updateInventoryQuery);
 

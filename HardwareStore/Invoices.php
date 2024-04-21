@@ -21,20 +21,15 @@
                                 ivo.storeId,
                                 hs.name AS storeName,
                                 ivo.inventoryId,
-                                pd.id AS productId,
-                                pd.name,
+                                nve.name,
                                 ivo.productCount,
-                                CAST(pd.price AS DECIMAL(10, 2)) AS price,
+                                CAST(nve.price AS DECIMAL(10, 2)) AS price,
                                 hs.managerId
                             FROM Invoices ivo
                             JOIN (
-                            SELECT nve1.id, nve1.productId 
+                            SELECT nve1.id, nve1.name, nve1.price
                             FROM Inventory nve1
                             ) nve ON ivo.inventoryId = nve.id
-                            JOIN (
-                            SELECT pd1.id, pd1.name, pd1.price
-                            FROM Products pd1
-                            ) pd ON pd.id = nve.productId
                             JOIN (
                             SELECT hs1.id, hs1.name, hs1.managerId
                             FROM HardwareStores hs1
@@ -51,7 +46,7 @@
     $getInvoicesStmt->bindParam(':userId', $_COOKIE['userId']);
     $getInvoicesStmt->bindParam(':userLevel', $_COOKIE['userLevel']);
     $getInvoicesStmt->execute();
-    
+
 
 
 ?>
@@ -166,7 +161,6 @@
     if (isset($_POST['logout'])) {
         // Remove the userId cookie
         setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
-        setcookie('userLevel', '', time() - 3600, '/'); // Expire the cookie
         // Redirect to the login page or any other desired page
         header("Location: login.php"); // Replace 'login.php' with your desired page
         exit(); // Terminate the script

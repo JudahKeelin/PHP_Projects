@@ -11,10 +11,9 @@ if (!isset($_COOKIE['userId'])) {
 }
 
 // Fetch cart items from the database
-$cartItemsQuery = "SELECT c.id, c.inventoryId, c.productCount, p.name, CAST(p.price AS DECIMAL(10, 2)) AS price
+$cartItemsQuery = "SELECT c.id, c.inventoryId, c.productCount, i.name, CAST(i.price AS DECIMAL(10, 2)) AS price
                     FROM Carts c
                     JOIN Inventory i ON c.inventoryId = i.id
-                    JOIN Products p ON i.productId = p.id
                     WHERE c.userId = :userId";
 $cartItemsStmt = $conn->prepare($cartItemsQuery);
 $cartItemsStmt -> bindParam(':userId', $_COOKIE['userId']);
@@ -132,7 +131,6 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
     if (isset($_POST['logout'])) {
         // Remove the userId cookie
         setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
-        setcookie('userLevel', '', time() - 3600, '/'); // Expire the cookie
         // Redirect to the login page or any other desired page
         header("Location: login.php"); // Replace 'login.php' with your desired page
         exit(); // Terminate the script
