@@ -4,7 +4,7 @@ require_once('dbh.inc.php');
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['productId']) && isset($_POST['quantity'])) {
     $productId = $_POST['productId'];
     $quantity = $_POST['quantity'];
-    $userId = $_COOKIE['userId']
+    $userId = $_COOKIE['userId'];
     
 
     try {
