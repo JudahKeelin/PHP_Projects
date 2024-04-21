@@ -1,25 +1,59 @@
 <?php
+    // Check if a user is logged in
+    if (!isset($_COOKIE['userId'])) {
+        // Redirect to login page or handle authentication
+        header("Location: login.php");
+        exit();
+    }
 
-// Include your database connection file here
-require_once('Handlers/dbh.inc.php');
+    // Include your database connection file here
+    require_once('Handlers/dbh.inc.php');
 
-// Check if a user is logged in
-if (!isset($_COOKIE['userId'])) {
-    // Redirect to login page or handle authentication
-    header("Location: login.php");
-    exit();
-}
+    $userId = $_COOKIE['userId'];
+    $userLevel = $_COOKIE['userLevel'];
 
-// Fetch cart items from the database
-$cartItemsQuery = "SELECT c.id, c.inventoryId, c.productCount, p.name, CAST(p.price AS DECIMAL(10, 2)) AS price
-                    FROM Carts c
-                    JOIN Inventory i ON c.inventoryId = i.id
-                    JOIN Products p ON i.productId = p.id
-                    WHERE c.userId = :userId";
-$cartItemsStmt = $conn->prepare($cartItemsQuery);
-$cartItemsStmt -> bindParam(':userId', $_COOKIE['userId']);
-$cartItemsStmt -> execute();
-$cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch invoices from the database
+    $getInvoicesQuery = "SELECT ivo.id,
+                                ivo.timestamp,
+                                ivo.invoiceId,
+                                ivo.userId,
+                                ivo.status,
+                                ivo.storeId,
+                                hs.name AS storeName,
+                                ivo.inventoryId,
+                                pd.id AS productId,
+                                pd.name,
+                                ivo.productCount,
+                                CAST(pd.price AS DECIMAL(10, 2)) AS price,
+                                hs.managerId
+                            FROM Invoices ivo
+                            JOIN (
+                            SELECT nve1.id, nve1.productId 
+                            FROM Inventory nve1
+                            ) nve ON ivo.inventoryId = nve.id
+                            JOIN (
+                            SELECT pd1.id, pd1.name, pd1.price
+                            FROM Products pd1
+                            ) pd ON pd.id = nve.productId
+                            JOIN (
+                            SELECT hs1.id, hs1.name, hs1.managerId
+                            FROM HardwareStores hs1
+                            ) hs ON hs.id = ivo.storeId
+                            WHERE (
+                            :userLevel = 0
+                            ) OR (
+                            :userLevel = 1 AND hs.managerId = :userId
+                            ) OR (
+                            :userLevel = 2 AND ivo.userId = :userId
+                            )";
+
+    $getInvoicesStmt = $conn->query($getInvoicesQuery);
+    $getInvoicesStmt->bindParam(':userId', $_COOKIE['userId']);
+    $getInvoicesStmt->bindParam(':userLevel', $_COOKIE['userLevel']);
+    $getInvoicesStmt->execute();
+    
+
+
 ?>
 
 <!DOCTYPE html>

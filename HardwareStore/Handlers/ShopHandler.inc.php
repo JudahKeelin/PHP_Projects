@@ -1,46 +1,62 @@
 <?php
-// Handle form submission
 require_once('dbh.inc.php');
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['productId']) && isset($_POST['quantity'])) {
-    $productId = $_POST['productId'];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['inventoryId']) && isset($_POST['quantity'])) {
+    $inventoryId = $_POST['inventoryId'];
     $quantity = $_POST['quantity'];
     $userId = $_COOKIE['userId'];
     
 
     try {
-        // Check if the product exists in the inventory and has sufficient stock
-        $inventoryQuery = "SELECT productCount FROM Inventory WHERE productId = ?";
+        $cartQuery = "SELECT * FROM Carts WHERE inventoryId = :inventoryId AND userId = :userId";
+        $cartStmt = $conn->prepare($cartQuery);
+        $cartStmt->bindParam(':userId', $userId);
+        $cartStmt->bindParam(':inventoryId', $inventoryId);
+        $cartStmt->execute();
+        $cartResult = $cartStmt->fetch(PDO::FETCH_ASSOC);
+
+        $inventoryQuery = "SELECT * FROM Inventory WHERE id = :inventoryId";
         $inventoryStmt = $conn->prepare($inventoryQuery);
-        $inventoryStmt->execute([$productId]);
+        $inventoryStmt->bindParam(':inventoryId', $inventoryId);
+        $inventoryStmt->execute();
         $inventoryResult = $inventoryStmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($inventoryResult && $inventoryResult['productCount'] >= $quantity) {
-            // Insert into the Cart table
-            
-            $insertCartQuery = "INSERT INTO Carts (userId, productId, productCount)
-            VALUES (:userId, :productId, :productCount)";
-            $insertCartStmt = $conn->prepare($insertCartQuery);
-            $insertCartStmt->execute([$_COOKIE['userId'], $productId, $quantity]);
-
-            // Update the product count in the Inventory table
-            if($userId == $inventoryResult['userId'] && $inventoryResult['productId'] == $productId){
-                $newCount = $inventoryResult['productCount'] - $quantity;
-                $updateInventoryQuery = "UPDATE Inventory SET productCount = ? WHERE productId = ?";
-                $updateInventoryStmt = $conn->prepare($updateInventoryQuery);
-                $updateInventoryStmt->execute([$newCount, $productId]);
+        if ($cartResult) {
+            if ($cartResult['productCount'] + $quantity < $inventoryResult['productCount']) {
+                $newCount = $cartResult['productCount'] + $quantity;
+            } else {
+                $newCount = $inventoryResult['productCount'];
             }
-           
+            
+            $updateCartQuery = "UPDATE Carts SET productCount = :newCount WHERE id = :id";
 
-            // Redirect back to shop page after successful addition to cart
+            $updateCartStmt = $conn->prepare($updateCartQuery);
+
+            $updateCartStmt->bindParam(':newCount', $newCount);
+            $updateCartStmt->bindParam(':id', $cartResult['id']);
+
+            $updateCartStmt->execute();
+
+            $conn = null;
+            $cartStmt = null;
+            $inventoryStmt = null;
+            $updateCartStmt = null;
+           
             header("Location: ../Shop.php");
-            exit();
+            die();
         } else {
-            // Redirect back to shop page with error message if insufficient stock
-            header("Location: ../Shop.php?error=insufficient_stock");
-            exit();
+            $insertCartQuery = "INSERT INTO Carts (userId, inventoryId, productCount)
+            VALUES (:userId, :inventoryId, :productCount)";
+            $insertCartStmt = $conn->prepare($insertCartQuery);
+            $insertCartStmt->execute([$_COOKIE['userId'], $inventoryId, $quantity]);
+
+            $conn = null;
+            $cartStmt = null;
+            $inventoryStmt = null;
+
+            header("Location: ../Shop.php");
+            die();
         }
     } catch (PDOException $e) {
-        // Handle database errors
         die("Query Failed: " . $e->getMessage());
     }
 }
