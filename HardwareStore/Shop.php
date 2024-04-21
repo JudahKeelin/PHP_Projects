@@ -1,3 +1,8 @@
+<?php
+    if ($_COOKIE['userId'] == null || $_COOKIE['userId'] < 1) {
+        header("Location: Login.php");
+    }
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,7 +70,12 @@
             <a href="Cart.php" class="cart-button">View Cart</a>
         </div>
     </div>
+    <?php
+        echo "<div>UserId: " . $_COOKIE['userId'] . "</div>";
+        echo "<button onclick='logout()'>Logout</button>";
+    ?>
     <script>
+            
         function addToCart(productId, productCount) {
             <?php
                 echo "console.log('Product ID: ' + productId);";

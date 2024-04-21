@@ -32,7 +32,7 @@
     </header>
     <div class="container">
         <h2>Login</h2>
-        <form action="Handlers/LoginHandler.inc.php" method="get">
+        <form action="Handlers/LoginHandler.inc.php" method="post">
             <label for="userName">UserName:</label>
             <input type="text" id="userName" name="userName" required>
             <br>
@@ -43,13 +43,11 @@
             <br>
             <button type="submit" name="submit">Login</button>
         </form>
-        <button onclick="popupTest()">test</button>
     </div>
-
-    <script>
-        function popupTest() {
-            alert("This is a test popup.");
-        }
-    </script>
+    <?php
+    if (isset($_COOKIE['userId']) && $_COOKIE['userId'] !== null && $_COOKIE['userId'] < 1) {
+        echo "<script>alert('Invalid username or password.');</script>";
+    }
+?>
 </body>
 </html>
