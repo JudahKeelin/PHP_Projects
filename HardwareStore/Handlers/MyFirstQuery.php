@@ -24,5 +24,3 @@ try {
     die(print_r($e));
 }
 
-
-?>

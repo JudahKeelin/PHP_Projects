@@ -35,7 +35,7 @@
         <div class="products">
             <?php
             try {
-                require_once('dbh.inc.php');
+                require_once('Handlers/dbh.inc.php');
 
                 $sql = "SELECT p.*, iv.productCount FROM Products p
                 JOIN Inventory iv ON p.id = iv.productId";
@@ -67,7 +67,11 @@
     </div>
     <script>
         function addToCart(productId, productCount) {
-            var quantity = document.getElementById("quantity_" + productId).value;
+            <?php
+                echo "console.log('Product ID: ' + productId);";
+                echo "console.log('Product Count: ' + productCount);";
+            ?>
+                var quantity = document.getElementById("quantity_" + productId).value;
             
             // Check if requested quantity is higher than available supply
             if (parseInt(quantity) > parseInt(productCount)) {
@@ -85,7 +89,7 @@
             };
             xhr.open("POST", "Cart.php", true);
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.send("productId=" + productId + "&quantity=" + quantity);
+            xhr.send("userId=" + 4 + "&productId=" + productId + "&quantity=" + quantity);
         }
     </script>
 </body>
