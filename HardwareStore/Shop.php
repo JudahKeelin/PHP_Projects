@@ -3,6 +3,8 @@
 // Include your database connection file here
 require_once('Handlers/dbh.inc.php');
 
+// Check if the logout button is clicked
+
 
 // Fetch products from the database
 $productsQuery = "SELECT iv.id,
@@ -59,7 +61,19 @@ $productsStmt = $conn->query($productsQuery);
     </div>
     <?php
         echo "<div>UserId: " . $_COOKIE['userId'] . "</div>";
-        //echo "<button onclick='logout()'>Logout</button>";
+    ?>
+    <!-- Logout form -->
+    <form method="post" action="">
+        <button type="submit" name="logout">Logout</button>
+    </form>
+    <?php
+    if (isset($_POST['logout'])) {
+        // Remove the userId cookie
+        setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
+        // Redirect to the login page or any other desired page
+        header("Location: login.php"); // Replace 'login.php' with your desired page
+        exit(); // Terminate the script
+    }
     ?>
 </body>
 </html>
