@@ -1,7 +1,5 @@
 <?php
 
-require_once('dbh.inc.php');
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $userName = $_POST['userName'];
     $userLevel = 2;
@@ -30,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn = null;
         $stmt = null;
 
-        header("Location: ../Shop.php");
+        header("Location: ../Login.php");
 
         die();
     } catch (PDOException $e) {

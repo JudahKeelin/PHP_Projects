@@ -2,44 +2,32 @@
 
 require_once('dbh.inc.php');
 
-if ($_SERVER["REQUEST_METHOD"] == "GET") {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $userName = $_POST['userName'];
-    
+    echo "Username: " . $userName;
     $password = $_POST['password'];
+    echo "Password: " . $password;
 
     try {
         require_once('dbh.inc.php');
 
-        $query = "SELECT * FROM People WHERE userName = :userName";
+        $query = "SELECT * FROM People WHERE userName = " . "'" . $userName . "'";
 
-        $stmt = $conn->prepare($query);
+        $result = $conn->query($query);
 
-        $stmt->bindParam(':userName', $userName);
+        $user = $result->fetch(PDO::FETCH_ASSOC);
 
-        $user = $stmt->execute();
-
-        if ($user) {
+        if ($user != 1) {
             if (password_verify($password, $user['password'])) {
-                session_start();
-                $_SESSION['user'] = $user;
+                setcookie("userId", $user['id'], time() + 86400, "/");
             } else {
-                echo '<script>
-                    alert("Invalid username or password.");
-                </script>';
+                setcookie("userId", -1, time() + 86400, "/");
                 header("Location: ../Login.php");
-                echo '<script>
-                    alert("Invalid username or password.");
-                </script>';
                 die();
             }
         } else {
-            echo '<script>
-                    alert("Invalid username or password.");
-                </script>';
+            setcookie("userId", -1, time() + 86400, "/");
             header("Location: ../Login.php");
-            echo '<script>
-                    alert("Invalid username or password.");
-                </script>';
             die();
         }
 
@@ -48,7 +36,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         header("Location: ../Shop.php");
 
-        die();
     } catch (PDOException $e) {
         die("Query Failed: " . print_r($e));
     }
