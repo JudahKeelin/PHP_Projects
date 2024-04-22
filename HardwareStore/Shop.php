@@ -1,5 +1,4 @@
 <?php
-
 // Check if a user is logged in
 if (!isset($_COOKIE['userId'])) {
     // Redirect to login page or handle authentication
@@ -20,25 +19,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
 }
 
 $userLevel = isset($_COOKIE['userLevel']);
-$userId = isset($_COOKIE['id']);
-if (isset($_COOKIE['userLevel'])) {
-    $userLevel = $_COOKIE['userLevel'];
-    
-    echo "User Level: " . $userLevel;
-    
-} else {
-    echo "User Level not found in cookie.";
-   
-}
-if (isset($_COOKIE['userId'])) {
-    $userId = $_COOKIE['userId'];
-    echo "User ID: " . $userId;
-} else {
-    echo "User ID not found in cookie.";
-}
-
-
-
+//if (isset($_COOKIE['userLevel'])) {
+//    $userLevel = $_COOKIE['userLevel'];
+//    echo "User Level: " . $userLevel;
+//} else {
+//    echo "User Level not found in cookie.";
+//}
 
 // Fetch inventory from the database
 $inventoryQuery = "SELECT i.id,
