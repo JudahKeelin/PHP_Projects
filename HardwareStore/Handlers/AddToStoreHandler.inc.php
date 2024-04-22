@@ -3,7 +3,6 @@ require_once('dbh.inc.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize input data
-    $storeId = 1;
     $name = $_POST['name'];
     $price = $_POST['price'];
     $quantity = $_POST['availableQuantity'];
@@ -11,9 +10,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     try {
         // Prepare and execute query
+        $getStoreQuery = "SELECT hs.id,
+                                hs.name,
+                                hs.managerId
+                        FROM HardwareStores hs
+                        WHERE hs.managerId = :userId";
         
-        $query = "INSERT INTO HardwareStores (storeId, name, price, availableQuantity, description ) 
-        VALUES (:storeId ,:name, :price, :availableQuantity, :description)";
+        $getStoreStmt = $conn->prepare($getStoreQuery);
+        $getStoreStmt->bindParam(':userId', $_COOKIE['userId']);
+        $getStoreStmt->execute();
+        $storeIdResult = $getStoreStmt->fetch(PDO::FETCH_ASSOC);
+        $storeId = $storeIdResult['id'];
+        if (!$storeId) {
+            $storeId = 1;
+        }
+        
+        $query = "INSERT INTO Inventory ( storeId, name, price, availableQuantity, description ) 
+        VALUES ( :storeId ,:name, :price, :availableQuantity, :description )";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':storeId', $storeId);
         $stmt->bindParam(':name', $name);
