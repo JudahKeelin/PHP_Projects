@@ -31,8 +31,8 @@ if (isset($_COOKIE['userLevel']) && $_COOKIE['userLevel'] < 2) {
 <form action="Handlers/AddToStoreHandler.inc.php" method="post">
     <label for="name">Item Name:</label>
     <input type="text" id="name" name="name" required><br><br>
-    <label for="description">Description:</label>
-    <textarea id="description" name="description" required></textarea><br><br>
+    <label for="description" style="display: block;">Description:</label>
+    <textarea id="description" name="description" rows="3" cols="25" style="display: block;" required></textarea><br><br>
     <label for="price">Price:</label>
     <input type="number" id="price" name="price" step="0.01" required><br><br>
     <label for="availableQuantity">Quantity:</label>
