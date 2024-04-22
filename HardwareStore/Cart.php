@@ -11,10 +11,9 @@ if (!isset($_COOKIE['userId'])) {
 }
 
 // Fetch cart items from the database
-$cartItemsQuery = "SELECT c.id, c.inventoryId, c.productCount, p.name, CAST(p.price AS DECIMAL(10, 2)) AS price
+$cartItemsQuery = "SELECT c.id, c.inventoryId, c.productCount, i.name, CAST(i.price AS DECIMAL(10, 2)) AS price
                     FROM Carts c
                     JOIN Inventory i ON c.inventoryId = i.id
-                    JOIN Products p ON i.productId = p.id
                     WHERE c.userId = :userId";
 $cartItemsStmt = $conn->prepare($cartItemsQuery);
 $cartItemsStmt -> bindParam(':userId', $_COOKIE['userId']);
@@ -42,11 +41,11 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 10px;
             text-align: center;
         }
-        header form {
+        .headerClass {
             float: left;
             margin-left: 2rem;
             margin-top: 2rem;
-            margin-right: -4rem
+            margin-right: -6rem
         }
         .container {
             max-width: 960px;
@@ -72,16 +71,20 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
         tb {
             align-items: left;
         }
-
+        h1 {
+            text-align: left;
+            margin-left: 45rem;
+        }
         /* Add more styles as needed */
     </style>
 </head>
 <body>
     <header>
         <!-- Logout form -->
-        <form method="post" action="">
+        <form method="post" action="" class="headerClass">
             <button type="submit" name="logout">Logout</button>
         </form>
+        <button onclick="window.location.href='shop.php'" class="headerClass" style="margin-left: 7rem">Back to Shop</button>
         <h1>Hardware Store - Cart</h1>
     </header>
     <div class="container">
@@ -89,7 +92,6 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="cart">
             <?php if (empty($cartItems)): ?>
                 <p>Your cart is empty.</p>
-                <a href="shop.php" class="button" style="display: inline-block">Back to Shop</a>
             <?php else: ?>
                 <table>
                     <thead>
@@ -123,7 +125,6 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
                 <form action="Handlers/CheckoutHandler.inc.php" method="post" style="margin-right: 10px; display: inline-block">
                     <button type="submit" name="checkout">Checkout</button>
                 </form>
-                <a href="shop.php" class="button" style="display: inline-block">Back to Shop</a>
             <?php endif; ?>
         </div>
         
@@ -132,7 +133,6 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
     if (isset($_POST['logout'])) {
         // Remove the userId cookie
         setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
-        setcookie('userLevel', '', time() - 3600, '/'); // Expire the cookie
         // Redirect to the login page or any other desired page
         header("Location: login.php"); // Replace 'login.php' with your desired page
         exit(); // Terminate the script
