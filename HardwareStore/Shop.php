@@ -83,6 +83,7 @@ $inventoryStmt = $conn->query($inventoryQuery);
         </form>
         <button onclick="window.location.href='Cart.php'" class="headerClass" style="margin-left: 7rem">View Cart</button>
         <button onclick="window.location.href='Invoices.php'" class="headerClass" style="margin-left: 7rem">View Invoices</button>
+        <button onclick="window.location.href='AddToStore.php'" class="headerClass" style="margin-left: 7rem;">Add Item to Store</button>
         <h1>Hardware Store - Shop</h1>
     </header>
     <div class="container">
