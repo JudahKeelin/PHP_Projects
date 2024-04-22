@@ -14,12 +14,18 @@ require_once('Handlers/dbh.inc.php');
 
 // Fetch inventory from the database
 $inventoryQuery = "SELECT i.id,
-                         i.storeId,
-                         i.name,
-                         i.availableQuantity,
-                         CAST(i.price AS DECIMAL(10, 2)) AS price,
-                         i.description
-                    FROM Inventory i";
+                        i.storeId,
+                        i.name,
+                        i.availableQuantity,
+                        CAST(i.price AS DECIMAL(10, 2)) AS price,
+                        i.description,
+                        c.productCount AS inCart
+                        FROM Inventory i
+                        LEFT JOIN (
+                        SELECT *
+                        FROM Carts c1
+                        WHERE c1.userId = 4
+                        ) c ON i.id = c.inventoryId";
 $inventoryStmt = $conn->query($inventoryQuery);
 ?>
 
@@ -94,7 +100,7 @@ $inventoryStmt = $conn->query($inventoryQuery);
                     echo "<div class='product'>
                             <h3>Product Name: " . $row['name'] . "</h3>
                             <p>Description: " . $row['description'] . "</p>
-                            <p>Available Quantity: " . $row['availableQuantity'] . "</p>
+                            <p>Available Quantity: " . ($row['availableQuantity'] - $row['inCart']) . "</p>
                             <p>Price: $" . $row['price'] . "</p>
                             <form action='Handlers/ShopHandler.inc.php' method='post'>
                                 <label for='quantity'>Quantity:</label>
