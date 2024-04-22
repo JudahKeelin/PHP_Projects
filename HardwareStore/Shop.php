@@ -63,20 +63,26 @@ $inventoryStmt = $conn->query($inventoryQuery);
             border: 1px solid #ddd;
             border-radius: 5px;
         }
-        header form {
+        .headerClass {
             float: left;
             margin-left: 2rem;
             margin-top: 2rem;
-            margin-right: -4rem
+            margin-right: -6rem
+        }
+        h1 {
+            text-align: left;
+            margin-left: 45rem;
         }
     </style>
 </head>
 <body>
     <header>
         <!-- Logout form -->
-        <form method="post" action="">
+        <form method="post" action="" class="headerClass">
             <button type="submit" name="logout">Logout</button>
         </form>
+        <button onclick="window.location.href='Cart.php'" class="headerClass" style="margin-left: 7rem">View Cart</button>
+        <button onclick="window.location.href='Invoices.php'" class="headerClass" style="margin-left: 7rem">View Invoices</button>
         <h1>Hardware Store - Shop</h1>
     </header>
     <div class="container">
@@ -100,7 +106,6 @@ $inventoryStmt = $conn->query($inventoryQuery);
                     }
             ?>
         </div>
-        <a href="Cart.php" class="cart-button" style="display: block; padding-top: 15px">View Cart</a>
     </div>
     <?php
     if (isset($_POST['logout'])) {

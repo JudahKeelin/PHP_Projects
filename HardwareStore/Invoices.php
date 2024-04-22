@@ -5,50 +5,78 @@
         header("Location: login.php");
         exit();
     }
+    try {
+        // Include your database connection file here
+        require_once('Handlers/dbh.inc.php');
 
-    // Include your database connection file here
-    require_once('Handlers/dbh.inc.php');
+        $userId = $_COOKIE['userId'];
+        
+        $getUserLevelQuery = "SELECT userLevel FROM People WHERE id = :userId";
 
-    $userId = $_COOKIE['userId'];
-    $userLevel = $_COOKIE['userLevel'];
+        $getUserLevelStmt = $conn->prepare($getUserLevelQuery);
 
-    // Fetch invoices from the database
-    $getInvoicesQuery = "SELECT ivo.id,
-                                ivo.timestamp,
-                                ivo.invoiceId,
-                                ivo.userId,
-                                ivo.status,
-                                ivo.storeId,
-                                hs.name AS storeName,
-                                ivo.inventoryId,
-                                nve.name,
-                                ivo.productCount,
-                                CAST(nve.price AS DECIMAL(10, 2)) AS price,
-                                hs.managerId
-                            FROM Invoices ivo
-                            JOIN (
-                            SELECT nve1.id, nve1.name, nve1.price
-                            FROM Inventory nve1
-                            ) nve ON ivo.inventoryId = nve.id
-                            JOIN (
-                            SELECT hs1.id, hs1.name, hs1.managerId
-                            FROM HardwareStores hs1
-                            ) hs ON hs.id = ivo.storeId
-                            WHERE (
-                            :userLevel = 0
-                            ) OR (
-                            :userLevel = 1 AND hs.managerId = :userId
-                            ) OR (
-                            :userLevel = 2 AND ivo.userId = :userId
-                            )";
+        $getUserLevelStmt->bindParam(':userId', $userId);
 
-    $getInvoicesStmt = $conn->query($getInvoicesQuery);
-    $getInvoicesStmt->bindParam(':userId', $_COOKIE['userId']);
-    $getInvoicesStmt->bindParam(':userLevel', $_COOKIE['userLevel']);
-    $getInvoicesStmt->execute();
+        $getUserLevelStmt->execute();
 
+        $userLevelResult = $getUserLevelStmt->fetch(PDO::FETCH_ASSOC);
+        $userLevel = $userLevelResult['userLevel'];
 
+        // Fetch invoices from the database
+        $getInvoicesQuery = "SELECT ivo.id,
+                                    ivo.timestamp,
+                                    ivo.invoiceId,
+                                    ivo.userId,
+                                    ivo.status,
+                                    ivo.storeId,
+                                    hs.name AS storeName,
+                                    ivo.inventoryId,
+                                    nve.name AS productName,
+                                    ivo.productCount,
+                                    CAST(nve.price AS DECIMAL(10, 2)) AS price,
+                                    hs.managerId
+                                FROM Invoices ivo
+                                JOIN (
+                                SELECT nve1.id, nve1.name, nve1.price
+                                FROM Inventory nve1
+                                ) nve ON ivo.inventoryId = nve.id
+                                JOIN (
+                                SELECT hs1.id, hs1.name, hs1.managerId
+                                FROM HardwareStores hs1
+                                ) hs ON hs.id = ivo.storeId
+                                WHERE (
+                                    :userLevela = 0
+                                ) OR (
+                                    :userLevelb = 1 AND :userIda = hs.managerId
+                                ) OR (
+                                    :userLevelc = 2 AND :userIdb = ivo.userId
+                                )";
 
+        $getInvoicesStmt = $conn->prepare($getInvoicesQuery);
+
+        $getInvoicesStmt->bindParam(':userIda', $userId);
+        $getInvoicesStmt->bindParam(':userIdb', $userId);
+        $getInvoicesStmt->bindParam(':userLevela', $userLevel);
+        $getInvoicesStmt->bindParam(':userLevelb', $userLevel);
+        $getInvoicesStmt->bindParam(':userLevelc', $userLevel);
+
+        $getInvoicesStmt->execute();
+
+        $invoices = $getInvoicesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $tables = array();
+        for ($i = 0; $i < count($invoices); $i++) {
+            $invoiceId = $invoices[$i]['invoiceId'];
+            if (!array_key_exists($invoiceId, $tables)) {
+                $tables[$invoiceId] = array();
+            }
+            array_push($tables[$invoiceId], $invoices[$i]);
+            
+        }
+    } catch (PDOException $e) {
+        echo ('PDO Exception: ' . $e->getMessage() . ' (Code: ' . $e->getCode() . ')');
+        die();
+    }
 ?>
 
 <!DOCTYPE html>
@@ -56,7 +84,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hardware Store - Cart</title>
+    <title>Hardware Store - Invoices</title>
     <!-- You can include CSS stylesheets here if needed -->
     <style>
         /* Add your CSS styles here */
@@ -71,11 +99,11 @@
             padding: 10px;
             text-align: center;
         }
-        header form {
+        .headerClass {
             float: left;
             margin-left: 2rem;
             margin-top: 2rem;
-            margin-right: -4rem
+            margin-right: -6rem
         }
         .container {
             max-width: 960px;
@@ -88,6 +116,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -101,59 +130,55 @@
         tb {
             align-items: left;
         }
-
+        h1 {
+            text-align: left;
+            margin-left: 45rem;
+        }
         /* Add more styles as needed */
     </style>
 </head>
 <body>
     <header>
         <!-- Logout form -->
-        <form method="post" action="">
+        <form method="post" action="" class="headerClass">
             <button type="submit" name="logout">Logout</button>
         </form>
-        <h1>Hardware Store - Cart</h1>
+        <button onclick="window.location.href='shop.php'" class="headerClass" style="margin-left: 7rem">Back to Shop</button>
+        <h1>Hardware Store - Invoices</h1>
     </header>
     <div class="container">
-        <h2>Cart</h2>
-        <div class="cart">
-            <?php if (empty($cartItems)): ?>
-                <p>Your cart is empty.</p>
-                <a href="shop.php" class="button" style="display: inline-block">Back to Shop</a>
-            <?php else: ?>
+        <h2>Invoices</h2>
+        <div class="invoices">
+            <?php foreach ($tables as $table): ?>
                 <table>
                     <thead>
                         <tr>
-                            <th>Product ID</th>
+                            <th>Invoice ID</th>
+                            <th>userId</th>
+                            <th>Store Name</th>
                             <th>Product Name</th>
                             <th>Price</th>
                             <th>Quantity</th>
                             <th>Total</th>
-                            <th>Delete</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($cartItems as $item): ?>
+                        <?php foreach ($table as $invoice): ?>
                             <tr>
-                                <td><?php echo $item['inventoryId']; ?></td>
-                                <td><?php echo $item['name']; ?></td>
-                                <td>$<?php echo $item['price']; ?></td>
-                                <td><?php echo $item['productCount']; ?></td>
-                                <td>$<?php echo number_format($item['price'] * $item['productCount'], 2); ?></td>
-                                <td>
-                                    <form action="Handlers/DeleteCartItemHandler.inc.php" method="post">
-                                        <input type="hidden" name="cartItemId" value="<?php echo $item['id']; ?>">
-                                        <button type="submit" name="submit">Delete</button>
-                                    </form>
+                                <td><?php echo $invoice['invoiceId']; ?></td>
+                                <td><?php echo $invoice['userId']; ?></td>
+                                <td><?php echo $invoice['storeName']; ?></td>
+                                <td><?php echo $invoice['productName']; ?></td>
+                                <td>$<?php echo $invoice['price']; ?></td>
+                                <td><?php echo $invoice['productCount']; ?></td>
+                                <td>$<?php echo $invoice['price'] * $invoice['productCount']; ?></td>
+                                <td><?php echo $invoice['status']; ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <br>
-                <form action="Handlers/CheckoutHandler.inc.php" method="post" style="margin-right: 10px; display: inline-block">
-                    <button type="submit" name="checkout">Checkout</button>
-                </form>
-                <a href="shop.php" class="button" style="display: inline-block">Back to Shop</a>
-            <?php endif; ?>
+            <?php endforeach; ?>
         </div>
         
     </div>

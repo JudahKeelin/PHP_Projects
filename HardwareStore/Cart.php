@@ -41,11 +41,11 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 10px;
             text-align: center;
         }
-        header form {
+        .headerClass {
             float: left;
             margin-left: 2rem;
             margin-top: 2rem;
-            margin-right: -4rem
+            margin-right: -6rem
         }
         .container {
             max-width: 960px;
@@ -71,16 +71,20 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
         tb {
             align-items: left;
         }
-
+        h1 {
+            text-align: left;
+            margin-left: 45rem;
+        }
         /* Add more styles as needed */
     </style>
 </head>
 <body>
     <header>
         <!-- Logout form -->
-        <form method="post" action="">
+        <form method="post" action="" class="headerClass">
             <button type="submit" name="logout">Logout</button>
         </form>
+        <button onclick="window.location.href='shop.php'" class="headerClass" style="margin-left: 7rem">Back to Shop</button>
         <h1>Hardware Store - Cart</h1>
     </header>
     <div class="container">
@@ -88,7 +92,6 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="cart">
             <?php if (empty($cartItems)): ?>
                 <p>Your cart is empty.</p>
-                <a href="shop.php" class="button" style="display: inline-block">Back to Shop</a>
             <?php else: ?>
                 <table>
                     <thead>
@@ -122,7 +125,6 @@ $cartItems = $cartItemsStmt->fetchAll(PDO::FETCH_ASSOC);
                 <form action="Handlers/CheckoutHandler.inc.php" method="post" style="margin-right: 10px; display: inline-block">
                     <button type="submit" name="checkout">Checkout</button>
                 </form>
-                <a href="shop.php" class="button" style="display: inline-block">Back to Shop</a>
             <?php endif; ?>
         </div>
         
