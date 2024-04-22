@@ -9,6 +9,34 @@ if (!isset($_COOKIE['userId'])) {
 
 // Include your database connection file here
 require_once('Handlers/dbh.inc.php');
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
+    // Remove the userId and userLevel cookies
+    setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
+    setcookie('userLevel', '', time() - 3600, '/');
+    
+    // Redirect to the login page
+    header("Location: login.php");
+    exit();
+}
+
+$userLevel = isset($_COOKIE['userLevel']);
+$userId = isset($_COOKIE['id']);
+if (isset($_COOKIE['userLevel'])) {
+    $userLevel = $_COOKIE['userLevel'];
+    
+    echo "User Level: " . $userLevel;
+    
+} else {
+    echo "User Level not found in cookie.";
+   
+}
+if (isset($_COOKIE['userId'])) {
+    $userId = $_COOKIE['userId'];
+    echo "User ID: " . $userId;
+} else {
+    echo "User ID not found in cookie.";
+}
+
 
 
 
@@ -83,7 +111,10 @@ $inventoryStmt = $conn->query($inventoryQuery);
         </form>
         <button onclick="window.location.href='Cart.php'" class="headerClass" style="margin-left: 7rem">View Cart</button>
         <button onclick="window.location.href='Invoices.php'" class="headerClass" style="margin-left: 7rem">View Invoices</button>
-        <button onclick="window.location.href='AddToStore.php'" class="headerClass" style="margin-left: 7rem;">Add Item to Store</button>
+        <?php if ($userLevel < 2): ?>
+            <button onclick="window.location.href='AddToStore.php'" class="headerClass" style="margin-left: 7rem;">Add Item to Store</button>
+        <?php endif; ?>
+
         <h1>Hardware Store - Shop</h1>
     </header>
     <div class="container">
@@ -112,6 +143,7 @@ $inventoryStmt = $conn->query($inventoryQuery);
     if (isset($_POST['logout'])) {
         // Remove the userId cookie
         setcookie('userId', '', time() - 3600, '/'); // Expire the cookie
+        setcookie('userLevel', '', time() - 3600, '/');
         // Redirect to the login page or any other desired page
         header("Location: login.php"); // Replace 'login.php' with your desired page
         exit(); // Terminate the script
