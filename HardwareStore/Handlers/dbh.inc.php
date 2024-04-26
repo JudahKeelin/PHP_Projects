@@ -6,6 +6,5 @@ try {
 }
 catch (PDOException $e) {
     print("Error connecting to SQL Server.");
-    print("Spot 1");
     die(print_r($e));
 }
