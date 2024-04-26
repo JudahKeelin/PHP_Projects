@@ -18,29 +18,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
     exit();
 }
 
-$userLevel = isset($_COOKIE['userLevel']);
-//if (isset($_COOKIE['userLevel'])) {
-//    $userLevel = $_COOKIE['userLevel'];
-//    echo "User Level: " . $userLevel;
-//} else {
-//    echo "User Level not found in cookie.";
-//}
+require_once('Handlers/dbh.inc.php');
+
+        $userId = $_COOKIE['userId'];
+        
+        $getUserLevelQuery = "SELECT userLevel FROM People WHERE id = :userId";
+
+        $getUserLevelStmt = $conn->prepare($getUserLevelQuery);
+
+        $getUserLevelStmt->bindParam(':userId', $userId);
+
+        $getUserLevelStmt->execute();
+
+        $userLevelResult = $getUserLevelStmt->fetch(PDO::FETCH_ASSOC);
+        $userLevel = $userLevelResult['userLevel'];
 
 // Fetch inventory from the database
 $inventoryQuery = "SELECT i.id,
                         i.storeId,
+                        hs.storeName,
                         i.name,
                         i.availableQuantity,
                         CAST(i.price AS DECIMAL(10, 2)) AS price,
                         i.description,
                         c.productCount AS inCart
                         FROM Inventory i
+                        JOIN (
+                            SELECT hs1.id, hs1.name AS storeName
+                            FROM HardwareStores hs1
+                        ) hs ON i.storeId = hs.id
                         LEFT JOIN (
-                        SELECT *
-                        FROM Carts c1
-                        WHERE c1.userId = 4
+                            SELECT *
+                            FROM Carts c1
+                            WHERE c1.userId = :userId
                         ) c ON i.id = c.inventoryId";
-$inventoryStmt = $conn->query($inventoryQuery);
+
+$inventoryStmt = $conn->prepare($inventoryQuery);
+
+$inventoryStmt->bindParam(':userId', $userId);
+
+$inventoryStmt->execute();
+
+$inventory = $inventoryStmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -114,9 +134,10 @@ $inventoryStmt = $conn->query($inventoryQuery);
         <div class="products">
             <?php
             
-                while ($row = $inventoryStmt->fetch(PDO::FETCH_ASSOC)) {
+                foreach ($inventory as $row) {
                     echo "<div class='product'>
                             <h3>Product Name: " . $row['name'] . "</h3>
+                            <p>Store Name: " . $row['storeName'] . "</p>
                             <p>Description: " . $row['description'] . "</p>
                             <p>Available Quantity: " . ($row['availableQuantity'] - $row['inCart']) . "</p>
                             <p>Price: $" . $row['price'] . "</p>

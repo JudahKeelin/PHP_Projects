@@ -11,6 +11,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
         header {
             background-color: #333;
@@ -28,27 +29,12 @@
 </head>
 <body>
     <header>
-        <h1>Hardware Store - Login</h1>
+        <h1>Hardware Store - Welcome!</h1>
     </header>
     <div class="container">
-        <h2>Login</h2>
-        <form action="Handlers/LoginHandler.inc.php" method="post">
-            <label for="userName">UserName:</label>
-            <input type="text" id="userName" name="userName" required>
-            <br>
-            <br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <br>
-            <br>
-            <button type="submit" name="submit">Login</button>
-            <a href="Signup.php">Signup</a></a>
-        </form>
+        <h2>Welcome to the online Hardware Store!</h2>
+        <h4>Please login to start shopping.</h4>
+        <a href="Login.php">Login</a>
     </div>
-    <?php
-    if (isset($_COOKIE['userId']) && $_COOKIE['userId'] !== null && $_COOKIE['userId'] < 1) {
-        echo "<script>alert('Invalid username or password.');</script>";
-    }
-?>
 </body>
 </html>

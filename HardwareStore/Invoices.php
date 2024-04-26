@@ -50,7 +50,8 @@
                                     :userLevelb = 1 AND :userIda = hs.managerId
                                 ) OR (
                                     :userLevelc = 2 AND :userIdb = ivo.userId
-                                )";
+                                )
+                                ORDER BY ivo.timestamp DESC";
 
         $getInvoicesStmt = $conn->prepare($getInvoicesQuery);
 
